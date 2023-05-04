@@ -260,8 +260,6 @@ class NeutronPluginContrailCoreV2(plugin_base.NeutronPluginContrailCoreBase):
                  'request_id': getattr(context, 'request_id', None)}
         if context.roles:
             cdict['roles'] = context.roles
-        if context.tenant:
-            cdict['tenant'] = context.tenant
         return cdict
 
     def _encode_resource(self, resource_id=None, resource=None, fields=None,

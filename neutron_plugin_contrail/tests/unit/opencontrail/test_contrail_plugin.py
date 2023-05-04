@@ -1167,7 +1167,7 @@ class ContrailPluginV2Test(unittest.TestCase):
         context = Context(tenant_id='e17301da-7a64-4210-c77e-9fb9738674a9')
         res_data = {'network': {'name': 'fake_network',
                                 'admin_state_up': True,
-                                'tenant_id': context.tenant}}
+                                'tenant_id': context.tenant_id}}
         status_code = 400
         response_info = {u'msg': u'quota limit (3) exceeded for resource virtual_network',
                          u'exception': u'OverQuota',
