@@ -127,7 +127,7 @@ class QuotaDriver(object):
         return quotas
 
     @classmethod
-    def get_detailed_project_quotas(cls, context, resources, tenant_id):
+    def get_detailed_tenant_quotas(cls, context, resources, tenant_id):
         """Given a list of resources and a sepecific tenant, retrieve
         the detailed quotas (limit, used, reserved).
         :param context: The request context, for access checks.
