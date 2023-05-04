@@ -59,7 +59,7 @@ class ContrailBGPVPNDriver(bgpvpn_driver_api.BGPVPNDriverBase):
 
     def _validate_project_ids(self, context, filters=None):
         if not context.is_admin:
-            return [self._project_id_neutron_to_vnc(context.tenant)]
+            return [self._project_id_neutron_to_vnc(context.tenant_id)]
 
         if not filters.get('tenant_id'):
             return None
