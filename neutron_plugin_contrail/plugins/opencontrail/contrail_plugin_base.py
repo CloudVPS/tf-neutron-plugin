@@ -290,7 +290,8 @@ class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
 
         self._delete_resource('network', context, network_id)
 
-    def get_networks(self, context, filters=None, fields=None):
+    def get_networks(self, context, filters=None, fields=None,
+                     sorts=None, limit=None, marker=None, page_reverse=False):
         """Get the list of Virtual Networks."""
 
         return self._list_resource('network', context, filters,
@@ -347,7 +348,8 @@ class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
 
         self._delete_resource('subnet', context, subnet_id)
 
-    def get_subnets(self, context, filters=None, fields=None):
+    def get_subnets(self, context, filters=None, fields=None,
+                    sorts=None, limit=None, marker=None, page_reverse=False):
         """Get the list of subnets."""
 
         return [self._make_subnet_dict(s)
@@ -481,7 +483,8 @@ class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
 
         self._delete_resource('port', context, port_id)
 
-    def get_ports(self, context, filters=None, fields=None):
+    def get_ports(self, context, filters=None, fields=None,
+                  sorts=None, limit=None, marker=None, page_reverse=False):
         """Get all ports.
 
         Retrieves all port identifiers belonging to the
