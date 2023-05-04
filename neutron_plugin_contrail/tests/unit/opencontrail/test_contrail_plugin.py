@@ -71,7 +71,7 @@ class Context(object):
         self._is_admin = True
         self.admin = uuid.uuid4().hex
         self.request_id = 'req-' + str(uuid.uuid4())
-        self.tenant = tenant_id
+        self.tenant_id = tenant_id
 
 
 class KeyStoneInfo(object):
