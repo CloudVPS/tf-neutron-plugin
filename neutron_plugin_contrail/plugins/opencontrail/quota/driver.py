@@ -98,7 +98,7 @@ class QuotaDriver(object):
             raise InvalidQuotaValue(unders=sorted(unders))
 
         # Get the applicable quotas
-        quotas = self.__class__.get_tenant_quotas(
+        quotas = self.__class__.get_project_quotas(
             context, resources, tenant_id)
 
         # Check the quotas and construct a list of the resources that
@@ -109,7 +109,7 @@ class QuotaDriver(object):
             raise OverQuota(overs=sorted(overs))
 
     @classmethod
-    def get_tenant_quotas(cls, context, resources, tenant_id):
+    def get_project_quotas(cls, context, resources, tenant_id):
         """Given a list of resources, retrieve the quotas for the given
         tenant. If no limits are found for the specified tenant, the operation
         returns the default limits.
@@ -120,15 +120,14 @@ class QuotaDriver(object):
         """
         # get default quotas
         quotas = cls.get_default_quotas(context, resources)
-        tenant_quotas = cls._get_tenant_quotas(context, resources, tenant_id)
+        tenant_quotas = cls._get_project_quotas(context, resources, tenant_id)
         for resource, resource_quota in tenant_quotas.items():
             # override default quota with project specific quota
             quotas[resource] = resource_quota
         return quotas
-    # end get_tenant_quotas
 
     @classmethod
-    def get_detailed_tenant_quotas(cls, context, resources, tenant_id):
+    def get_detailed_project_quotas(cls, context, resources, tenant_id):
         """Given a list of resources and a sepecific tenant, retrieve
         the detailed quotas (limit, used, reserved).
         :param context: The request context, for access checks.
@@ -136,7 +135,7 @@ class QuotaDriver(object):
         :return dict: mapping resource name in dict to its corresponding limit
             used and reserved. Reserved currently returns default value of 0
         """
-        quotas = cls.get_tenant_quotas(context, resources, tenant_id)
+        quotas = cls.get_project_quotas(context, resources, tenant_id)
         detailed_quotas = {}
         for resource, quota in quotas.items():
             detailed_quotas[resource] = {
@@ -170,7 +169,7 @@ class QuotaDriver(object):
         for project in project_list:
             if default_quota and cls._is_default_project(project):
                 continue
-            quotas = cls._get_tenant_quotas(context, resources,
+            quotas = cls._get_project_quotas(context, resources,
                                             project['uuid'])
             if quotas:
                 quotas['tenant_id'] = project['uuid'].replace('-', '')
@@ -179,7 +178,7 @@ class QuotaDriver(object):
     # end get_all_quotas
 
     @classmethod
-    def _get_tenant_quotas(cls, context, resources, tenant_id):
+    def _get_project_quotas(cls, context, resources, tenant_id):
         """Get quotas of a tenant.
         :param context: The request context, for access checks.
         :param resources: A dictionary of the registered resource keys.
@@ -207,14 +206,14 @@ class QuotaDriver(object):
                 if resource_quota is not None:
                     quotas[resource] = resource_quota
         return quotas
-    # end _get_tenant_quotas
+    # end _get_project_quotas
 
     @classmethod
     def _is_default_project(cls, project):
         return project['fq_name'] == ['default-domain', 'default-project']
 
     @classmethod
-    def delete_tenant_quota(cls, context, tenant_id):
+    def delete_project_quota(cls, context, tenant_id):
         try:
             proj_id = str(uuid.UUID(tenant_id))
             proj_obj = cls._get_vnc_conn().project_read(id=proj_id)
