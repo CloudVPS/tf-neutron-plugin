@@ -64,7 +64,6 @@ except ImportError:
     from neutron_lib.exceptions import portsecurity as port_security_extn
 
 from neutron import version
-from neutron.db import portbindings_base
 try:
     from neutron_lib.exceptions import allowedaddresspairs
 except ImportError:
@@ -169,7 +168,6 @@ class HttpResponseError(Exception):
 
 class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
                                     securitygroup.SecurityGroupPluginBase,
-                                    portbindings_base.PortBindingBaseMixin,
                                     external_net.External_net,
                                     serviceinterface.Serviceinterface,
                                     vfbinding.Vfbinding,
@@ -240,8 +238,6 @@ class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
                 "port-mac-address-regenerate" not in self.supported_extension_aliases):
             self.supported_extension_aliases.append("port-mac-address-regenerate")
         super(NeutronPluginContrailCoreBase, self).__init__()
-        if hasattr(portbindings_base, 'register_port_dict_function'):
-            portbindings_base.register_port_dict_function()
         utils.register_vnc_api_options()
         self._parse_class_args()
         self.api_servers = utils.RoundRobinApiServers()
