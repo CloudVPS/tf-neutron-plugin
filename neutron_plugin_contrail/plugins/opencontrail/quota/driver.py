@@ -140,20 +140,54 @@ class QuotaDriver(object):
         for resource, quota in quotas.items():
             detailed_quotas[resource] = {
                 'limit': quota,
-                'used': cls._get_used_quota(resource, tenant_id),
+                'used': cls._get_used_quota(context, resource, tenant_id),
                 'reserved': 0,  # zero is a default value in Neutron driver
             }
+        LOG.info("==Detailed Quotas==: %s", detailed_quotas)
         return detailed_quotas
+
     # end get_detailed_tenant_quotas
 
     @classmethod
-    def _get_used_quota(cls, resource, tenant_id):
+    def _get_used_quota(cls, context, resource, tenant_id):
         """Get used quota of given resource for tenant.
+        :param context: The request context, for access checks.
         :param resource: String with resource name.
         :param tenant_id: String with project ID
         """
-        return 0  # TODO(pawel.zadrozny): Find a way to count used resources
-    # end _get_used_quota
+
+        if resource == 'security_group_rule':
+            sg_rule_count = 0
+            sg_list = cls._get_vnc_conn().project_read(id=str(uuid.UUID(tenant_id))).get_security_groups() or []
+            for sg in sg_list:
+                sg_obj = cls._get_vnc_conn().security_group_read(id=sg['uuid'])
+                list_of_sg_rules = sg_obj.get_security_group_entries().get_policy_rule()
+                sg_rule_count += len(list_of_sg_rules)
+            return sg_rule_count
+
+        if resource == 'floatingip':
+            fip_list = cls._get_vnc_conn().project_read(id=str(uuid.UUID(tenant_id))).get_floating_ip_back_refs() or []
+            return len(fip_list)
+
+        if resource == 'subnet':
+            subnet_count = 0
+            networks = cls._get_vnc_conn().project_read(id=str(uuid.UUID(tenant_id))).get_virtual_networks() or []
+            for net in networks:
+                net_obj = cls._get_vnc_conn().virtual_network_read(id=net['uuid'])
+                ipam_refs = net_obj.get_network_ipam_refs()
+                for ipam_ref in ipam_refs or []:
+                    subnet_count += len(ipam_ref['attr'].get_ipam_subnets() or [])
+            return subnet_count
+
+        if resource in cls.quota_neutron_to_contrail_type:
+            contrail_resource_plural = cls.quota_neutron_to_contrail_type[resource] + 's'
+            proj_obj = cls._get_vnc_conn().project_read(id=str(uuid.UUID(tenant_id)))
+            proj_resource_func = getattr(proj_obj, "get_" + contrail_resource_plural, None)
+            if proj_resource_func:
+                quota = proj_resource_func()
+                return len(quota) if quota is not None else 0
+            return 0
+
 
     @classmethod
     def get_all_quotas(cls, context, resources):
@@ -170,7 +204,7 @@ class QuotaDriver(object):
             if default_quota and cls._is_default_project(project):
                 continue
             quotas = cls._get_project_quotas(context, resources,
-                                            project['uuid'])
+                                             project['uuid'])
             if quotas:
                 quotas['tenant_id'] = project['uuid'].replace('-', '')
                 ret_list.append(quotas)
