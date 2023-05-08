@@ -469,7 +469,8 @@ class NeutronPluginContrailCoreBase(neutron_plugin_base_v2.NeutronPluginBaseV2,
             'port': port,
             'original_port': original_port,
         }
-        registry.notify(resources.PORT, events.AFTER_UPDATE, self, **kwargs)
+        payload = events.EventPayload(context, metadata=kwargs)
+        registry.publish(resources.PORT, events.AFTER_UPDATE, self, payload)
         return port
 
     def delete_port(self, context, port_id):
